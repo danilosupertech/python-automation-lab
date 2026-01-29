@@ -21,5 +21,3 @@ pip install -r requirements.txt
 python -m bill_organizer --help
 ```
 
-## Notes
-- This repo is separate from your **42 Common Core** repos (e.g., `python-core-42`).
