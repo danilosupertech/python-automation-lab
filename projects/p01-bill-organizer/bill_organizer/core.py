@@ -1,11 +1,16 @@
 import json
 import logging
+import re
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Tuple
 
-from .config import Rules, DEFAULT_RULES
+from .config import DEFAULT_RULES, Rules
+
+MONTH_RE = re.compile(r"(20\d{2})[-_](0[1-9]|1[0-2])")
+SAFE_RE = re.compile(r"[^a-z0-9]+")
+
 
 @dataclass
 class Result:
@@ -19,8 +24,30 @@ class Result:
         if self.by_supplier is None:
             self.by_supplier = {}
 
+
+def extract_month(filename: str) -> str:
+    """
+    Extract YYYY-MM from filename. Defaults to 'unknown-month' if not found.
+    Accepts patterns like 2026-01 or 2026_01.
+    """
+    m = MONTH_RE.search(filename)
+    if not m:
+        return "unknown-month"
+    return f"{m.group(1)}-{m.group(2)}"
+
+
+def slugify(text: str) -> str:
+    """
+    Create a safe filename token: lowercase, alnum/underscore only.
+    """
+    t = text.lower()
+    t = SAFE_RE.sub("_", t).strip("_")
+    return t or "file"
+
+
 def is_pdf(path: Path) -> bool:
     return path.is_file() and path.suffix.lower() == ".pdf"
+
 
 def classify(filename: str, rules: Rules) -> str:
     lower = filename.lower()
@@ -32,13 +59,16 @@ def classify(filename: str, rules: Rules) -> str:
                 return supplier
     return "outros"
 
+
 def iter_pdfs(input_dir: Path) -> Iterable[Path]:
     for p in input_dir.iterdir():
         if is_pdf(p):
             yield p
 
+
 def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
+
 
 def transfer_file(src: Path, dst: Path, mode: str, dry_run: bool) -> None:
     if dry_run:
@@ -49,6 +79,7 @@ def transfer_file(src: Path, dst: Path, mode: str, dry_run: bool) -> None:
         shutil.copy2(str(src), str(dst))
     else:
         raise ValueError(f"Invalid mode: {mode}")
+
 
 def organize(
     input_dir: Path,
@@ -65,14 +96,28 @@ def organize(
     for pdf in iter_pdfs(input_dir):
         try:
             supplier = classify(pdf.name, rules)
-            supplier_dir = output_dir / supplier
+
+            # NEW: month-based folder
+            month = extract_month(pdf.name)
+            supplier_dir = output_dir / month / supplier
             ensure_dir(supplier_dir)
 
-            target = supplier_dir / pdf.name
-            if target.exists():
-                result.skipped += 1
-                logger.info("SKIP (exists): %s -> %s", pdf.name, target)
-                continue
+            # NEW: safe renaming + unique counter
+            stem = Path(pdf.name).stem
+            # remove o prefixo do mês do início do nome (ex: "2026-01_" ou "2026_01_")
+            stem_clean = re.sub(rf"^{re.escape(month)}[-_]+", "", stem)
+            stem_clean = re.sub(r"^(20\d{2})[-_](0[1-9]|1[0-2])[-_]+", "", stem_clean)  # fallback
+            base = slugify(stem_clean)
+
+            new_name_base = f"{month}_{supplier}_{base}"
+
+            n = 1
+            while True:
+                candidate = supplier_dir / f"{new_name_base}_{n:03d}{pdf.suffix.lower()}"
+                if not candidate.exists():
+                    target = candidate
+                    break
+                n += 1
 
             transfer_file(pdf, target, mode=mode, dry_run=dry_run)
 
