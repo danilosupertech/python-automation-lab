@@ -2,10 +2,30 @@ import argparse
 import logging
 from pathlib import Path
 
-from .core import organize
-from .config import DEFAULT_RULES
+try:
+    from .core import organize
+    from .config import DEFAULT_RULES
+except ImportError:  # pragma: no cover - fallback for running as a script
+    from pathlib import Path as _Path
+    import sys as _sys
+
+    _sys.path.append(str(_Path(__file__).resolve().parent.parent))
+    from bill_organizer.core import organize  # type: ignore
+    from bill_organizer.config import DEFAULT_RULES  # type: ignore
 
 def build_parser() -> argparse.ArgumentParser:
+    """Create and configure the CLI argument parser.
+
+    Supported arguments:
+        --input/-i: input folder with PDFs.
+        --output/-o: output folder where files will be organized.
+        --mode: operation mode (copy/move).
+        --dry-run: simulate execution without changing files.
+        --log-level: log level shown in the console.
+
+    Returns:
+        argparse.ArgumentParser: parser with all options supported by the app.
+    """
     p = argparse.ArgumentParser(
         prog="bill_organizer",
         description="Organize PDF bills by supplier using filename matching (MVP).",
@@ -18,6 +38,15 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 def main(argv=None) -> int:
+    """CLI entry point.
+
+    Args:
+        argv (list[str] | None): list of arguments to parse. When None, uses the
+            command-line arguments (sys.argv).
+
+    Returns:
+        int: exit code (0 on success, 2 when the input folder does not exist).
+    """
     args = build_parser().parse_args(argv)
 
     logging.basicConfig(level=getattr(logging, args.log_level), format="%(levelname)s - %(message)s")
@@ -46,4 +75,5 @@ def main(argv=None) -> int:
     return 0
 
 if __name__ == "__main__":
+    # Run the application as a script, returning the appropriate exit code.
     raise SystemExit(main())
