@@ -1,41 +1,25 @@
-# Python Automation Lab
+# 🧪 python-automation-lab
 
-Practical Python automations focused on real-world tasks: file processing, data cleaning, API integrations, and reporting.
+Practical Python automations focused on real-world tasks (files, CSVs, APIs) with a **small, clean MVP approach**.
 
-## Why this repo
-This repository showcases production-minded scripting:
-- clear folder structure
-- repeatable runs
-- logging and error handling
-- small, focused deliverables
+## Goals
+- Build confidence through small deliverables
+- Ship portable scripts (Linux/WSL)
+- Keep the repo professional and easy to navigate
 
 ## Projects
-### 01 — Bill Organizer
-Organizes invoices/documents into a clean folder structure by period and provider.
+- **P01 — Bill Organizer (MVP)** → organizes PDF bills into folders and generates a simple summary
+- P02 — CSV Cleaner (planned)
+- P03 — API Report (planned)
 
-**Highlights**
-- Pathlib-based file handling
-- Safe renaming rules
-- Logging + dry-run mode
-
-### 02 — CSV Cleaner
-Cleans messy CSV files and outputs normalized datasets + a quality report.
-
-**Highlights**
-- CLI with arguments
-- Data normalization rules
-- Summary metrics
-
-### 03 — API Report
-Fetches data from a public API and generates a report (CSV/JSON + Markdown/HTML).
-
-**Highlights**
-- API consumption
-- Report generation
-- Designed for scheduling (cron)
-
-## How to run
+## Quick start
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+cd projects/p01-bill-organizer
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
+python -m bill_organizer --help
+```
+
+## Notes
+- This repo is separate from your **42 Common Core** repos (e.g., `python-core-42`).
