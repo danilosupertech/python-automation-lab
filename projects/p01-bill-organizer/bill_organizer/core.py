@@ -201,12 +201,13 @@ def organize(
             target, supplier = _compute_target_path(pdf, output_dir, rules)
             transfer_file(pdf, target, mode=mode, dry_run=dry_run)
 
-            if mode == "move":
-                result.moved += 1
-            else:
-                result.copied += 1
+            if not dry_run:
+                if mode == "move":
+                    result.moved += 1
+                else:
+                    result.copied += 1
+                result.by_supplier[supplier] = result.by_supplier.get(supplier, 0) + 1
 
-            result.by_supplier[supplier] = result.by_supplier.get(supplier, 0) + 1
             logger.info("%s: %s -> %s", mode.upper(), pdf.name, target)
 
         except (OSError, ValueError) as exc:
