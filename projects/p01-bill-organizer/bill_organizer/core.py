@@ -108,6 +108,10 @@ def organize(
             stem_clean = re.sub(rf"^{re.escape(month)}[-_]+", "", stem)
             stem_clean = re.sub(r"^(20\d{2})[-_](0[1-9]|1[0-2])[-_]+", "", stem_clean)  # fallback
             base = slugify(stem_clean)
+            # remove supplier duplication at the start: "edp_fatura" -> "fatura"
+            prefix = f"{supplier}_"
+            if base.startswith(prefix):
+                base = base[len(prefix):] or "file"
 
             new_name_base = f"{month}_{supplier}_{base}"
 
