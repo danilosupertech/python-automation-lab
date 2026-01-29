@@ -191,13 +191,35 @@ requirements.txt     # Python dependencies
 
 ## Dependencies
 
-### Runtime
-- Python 3.8+
-- Standard library only (no external runtime dependencies)
+### Runtime Dependencies
+- **Python 3.8+**: No external packages required - uses only Python standard library
 
-### Development
-- pytest >= 7.0
-- pytest-cov >= 4.0
+**Standard Library Modules Used:**
+- `json` - Parsing and generating JSON for the summary report
+- `logging` - Logging operations and debugging information
+- `re` - Regular expressions for month extraction and filename sanitization
+- `shutil` - File operations (copy and move)
+- `dataclasses` - Type-safe data structures (Result class)
+- `pathlib` - Cross-platform file path handling
+- `typing` - Type hints for better code documentation and IDE support
+
+### Development Dependencies
+- **pytest** (>= 7.0)
+  - Testing framework for writing and running unit tests
+  - Used to execute the 63 test cases
+  - Provides fixtures for temporary file handling (`tmp_path`)
+  - Supports test discovery and organized test output
+
+- **pytest-cov** (>= 4.0)
+  - Code coverage plugin for pytest
+  - Measures which parts of the code are executed by tests
+  - Generates coverage reports (term, HTML, XML formats)
+  - Helps identify untested code paths
+
+### Optional Development Tools (not in requirements)
+- `black` - Code formatter for consistent Python style
+- `pylint` - Static code analysis for code quality
+- `mypy` - Static type checker for Python
 
 ## Development
 
